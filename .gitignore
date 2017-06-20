@@ -1,0 +1,4 @@
+dataset
+log*
+checkpoint*
+*.pyc
