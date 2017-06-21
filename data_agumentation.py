@@ -5,8 +5,8 @@ slice_w = 256
 slice_h = 256
 patch_w = 225
 patch_h = 225
-net_density_h = 28
-net_density_w = 28
+net_density_h = 27
+net_density_w = 27
 def density_resize(density, fx, fy):
     return cv2.resize(density, None, fx = fx, fy = fy, interpolation = cv2.INTER_CUBIC)/(fx*fy)
 def multiscale_pyramidal(images, gts, start = 0.5, end = 1.3, step = 0.1):
