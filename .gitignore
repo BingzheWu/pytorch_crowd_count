@@ -1,4 +1,4 @@
-dataset
+dataset*
 log*
 checkpoint*
 *.pyc
