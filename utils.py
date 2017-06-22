@@ -1,4 +1,6 @@
+
 import cv2
+import torch
 import numpy as np
 import h5py
 import os
@@ -58,8 +60,17 @@ def vis_square(data, mode = None):
     	plt.imshow(data, cmap = 'hot')
     plt.axis('off')
     plt.show()
-
-
+def read_gray_img(img_path):
+    bgr = cv2.imread(img_path)
+    #bgr = cv2.resize(bgr, (225, 225))
+    gray = cv2.cvtColor(bgr, cv2.COLOR_BGR2GRAY)
+    gray_3 = cv2.cvtColor(gray, cv2.COLOR_GRAY2RGB)
+    print gray.shape
+    plt.imshow(gray_3)
+    plt.show()
+    return np.expand_dims(gray_3,0).transpose((0,3,1,2))
 if __name__ == '__main__':
-	datapath = 'dataset/processed_hdf5/'
-	read_data(datapath)
+	#datapath = 'dataset/processed_hdf5/'
+	#read_data(datapath)
+    img_path = 'demo/demo1.jpg'
+    read_gray_img(img_path)
