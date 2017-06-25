@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from models import predict_net
 def demo(img_path):
 	net = predict_net()
-	net.load_state_dict(torch.load('checkpoint/crowd_net19.pth'))
+	net.load_state_dict(torch.load('checkpoint/crowd_net2.pth'))
 	input_img = read_gray_img(img_path)
 	input_img = torch.autograd.Variable(torch.Tensor(input_img/255.0))
 	print(input_img.size())
@@ -17,4 +17,4 @@ def demo(img_path):
 	plt.imshow(heat_map, cmap = 'hot')
 	plt.show()
 if __name__ == '__main__':
-	demo('demo/10.jpg')
+	demo('demo/demo3.jpg')

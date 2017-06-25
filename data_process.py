@@ -13,6 +13,7 @@ from random import shuffle
 import pickle
 import h5py
 import glob
+import lmdb
 from data_agumentation import *
 
 def load_gt_from_json(gt_file, gt_shape):
@@ -132,9 +133,58 @@ def process_dump_tohdf5data(X,Y, path, phase):
                 hf['label'] = Y_process[:(i2-i1)]
             f.write(file_name+'\n')
             i1 += batch_size
-            
+def create_lmdb(image_save_path, label_save_path,  h5_datapath):
+    hdf5_list = [x for x in glob.glob(os.path.join(h5_datapath, '*.h5'))]
+    x = np.zeros((9000, 255,255, 3))
+    map_size = 1e12
+    env_image = lmdb.open(image_save_path, map_size = map_size)
+    env_label = lmdb.open(label_save_path, map_size = map_size)
 
-
+    idx = 0
+    for f in hdf5_list:
+        with h5py.File(f, 'r') as h5_file:
+            images = np.array(h5_file.get('data'))
+            gts = np.array(h5_file.get('label'))
+            print(gts.shape)
+            #self.images.append(np.array(images)/ 255.0)
+            #self.gts.append(np.array(gts))
+            txn_image = env_image.begin(write = True, buffers = True)
+            txn_label = env_label.begin(write = True, buffers = True)
+            for i in range(images.shape[0]):
+                image = images[i]
+                print(image.shape)
+                #print(image.shape)
+                gt = gts[i]                    
+                image = np.array(image).tostring()
+                label = np.array(gt).tostring()
+                str_id = '{:010}'.format(idx)
+                #print(data.shape)                    
+                txn_image.put(str_id.encode('ascii'), image)
+                txn_label.put(str_id.encode('ascii'), label)
+                if idx % 100 == 0:
+                    txn_image.commit()
+                    txn_label.commit()
+                    txn_label = env_label.begin(write = True, buffers = True)
+                    txn_image = env_image.begin(write = True, buffers = True)
+                idx += 1
+            txn_image.commit()
+            txn_label.commit()
+def read_lmdb(lmdb_path):
+    env = lmdb.open(lmdb_path)
+    with env.begin() as txn:
+        cursor = txn.cursor()
+        for (idx, (key, value)) in enumerate(cursor):
+            image = np.fromstring(value, dtype = np.float32)
+            #image = np.reshape(image, (3,225,225))/255.0
+            image = np.reshape(image, (27, 27))
+            #image = image.transpose((1,2,0))
+            print(image)
+            plt.imshow(image, cmap = 'hot')
+            plt.show()
+            break
+        #image = txn.get('0')
+        #image = np.fromstring(image)[0]
+        #print image.shape
 def test_density_gen():
     img_path = 'dataset/UCF_CC_50/1.jpg'
     load_one_image(img_path)
@@ -144,4 +194,8 @@ def main():
     save_path = 'dataset/processed_hdf5'
     process_dump_tohdf5data(X_train, Y_train, save_path, 'train')
 if __name__ =='__main__':
-    main()
+    h5_datapath = 'dataset/processed_hdf5/'
+    image_save_path = 'dataset/processed_lmdb_image'
+    label_save_path = 'dataset/processed_lmdb_label'
+    create_lmdb(image_save_path, label_save_path, h5_datapath)
+    #read_lmdb(label_save_path)

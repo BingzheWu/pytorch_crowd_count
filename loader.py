@@ -4,44 +4,38 @@ import glob
 import os
 import numpy as np
 import torch.utils.data as data
+import lmdb
 class UCF_CC_50(data.Dataset):
-	def __init__(self, h5_datapath):
-		super(UCF_CC_50, self).__init__()
-		self.h5_datapath = h5_datapath
-		hdf5_list = [x for x in glob.glob(os.path.join(self.h5_datapath, '*.h5'))]
-		print(hdf5_list)
+	def __init__(self, lmdb_image_datapath, lmdb_label_datapath):
+                super(UCF_CC_50, self).__init__()
+		self.lmdb_image_datapath = lmdb_image_datapath
+		self.lmdb_label_datapath = lmdb_label_datapath
 		self.images = []
 		self.gts = []
 		self.total_patches = 0
 		self.limits = []
 		self.num_files = 0
-		for f in hdf5_list:
-			self.num_files += 1
-			with h5py.File(f, 'r') as h5_file:
-				images = h5_file.get('data')
-				gts = h5_file.get('label')
-				self.images.append(np.array(images)/ 255.0)
-				self.gts.append(np.array(gts))
-				self.limits.append(images.shape[0])
-				self.total_patches += images.shape[0]
-				if self.num_files == 1:
-					break
-		print(self.limits)
-	
+		self.file_list = []
+		self.env_image = lmdb.open(self.lmdb_image_datapath)
+		self.env_label = lmdb.open(self.lmdb_label_datapath)
+		self.txn_image = self.env_image.begin()
+		self.txn_label = self.env_label.begin()
+		self.cursor_image = iter(self.txn_image.cursor())
+		self.cursor_label = self.txn_label.cursor()
 	def __getitem__(self, index):
-		dataset_index = -1
-		for i in range(len(self.limits)-1, -1, -1):
-			if index>=self.limits[i]:
-				dataset_index = i
-				break
-			in_dataset_index = index -self.limits[dataset_index]
-			return self.images[dataset_index][in_dataset_index], self.gts[dataset_index][in_dataset_index] 
+		key = '{:010}'.format(index)
+		image = self.txn_image.get(key)
+		image = np.fromstring(image, dtype = np.float32)
+		image = image.reshape((3, 225, 225))
+		label = self.txn_label.get(key)
+		label = np.fromstring(label, dtype= np.float32).reshape((27, 27))
+		return image/255.0, label 
 	def __len__(self):
-		return self.total_patches
-def dataloader(datapath, phase = 'train', batch_size = 20, num_workers = 1):
-	dataset = UCF_CC_50(datapath)
+		return 32000
+def dataloader(image_path, label_path, phase = 'train', batch_size = 20, num_workers = 1):
+	dataset = UCF_CC_50(image_path, label_path)
 	data_loader = torch.utils.data.DataLoader(dataset, batch_size = batch_size, num_workers = num_workers)
 	return data_loader
 if __name__ == '__main__':
-	dataset = UCF_CC_50('dataset/processed_hdf5')
-	print dataset.__getitem__(20)
+	dataset = UCF_CC_50('dataset/processed_lmdb_image', 'dataset/processed_lmdb_label')
+	print type(dataset.__getitem__(14000))

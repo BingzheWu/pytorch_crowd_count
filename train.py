@@ -7,7 +7,7 @@ from loader import dataloader
 import torch.nn as nn
 def train():
 	net = predict_net()
-	data_loader = dataloader('dataset/processed_hdf5')
+	data_loader = dataloader('dataset/processed_lmdb_image', 'dataset/processed_lmdb_label')
 	criterion = nn.MSELoss().cuda()
 	net = net.cuda()
 	for module in net.modules():
@@ -16,7 +16,9 @@ def train():
 	net.train()
 	optimizer = torch.optim.SGD(net.parameters(), lr = 0.001, momentum = 0.9)
 	for epoch in range(20):
-		for i, data in enumerate(data_loader, 0):
+		for i, data in enumerate(data_loader):
+			if i>=201:
+				break
 			inputs, gts = data
 			inputs, gts = torch.autograd.Variable(inputs), torch.autograd.Variable(gts)
 			inputs = inputs.cuda()
@@ -27,7 +29,7 @@ def train():
 			loss.backward()
 			optimizer.step()
 			running_loss  = loss.data[0]
-			if i%100 == 0:
+			if i%50 == 0:
 				print('[%d, %5d] loss: %.3f' %
                   (epoch + 1, i + 1, running_loss))
 		torch.save(net.state_dict(), 'checkpoint/crowd_net%d.pth'%(epoch))
