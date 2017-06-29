@@ -1,45 +1,46 @@
-## High Density Crowd Counting
+# Crowd Counting-Pytorch
  
-This is a technique used to count or estimate the number of people in a crowd.
+Based on [CrowdNet](https://arxiv.org/abs/1608.06197) by Boominathan et al.
 
-Our implementation is based on CrowdNet, but we made some changes.
+Pytorch implementation of CrowdNet. A fast way to count dense crowd.
 
-You can use the code to estimate the density(actually the number of the people in a static picture) of people.
+## Setup
 
-### Disclaimer
-This is a re-implementation of original CrowdNet.
-The official repository is  available [here](https://github.com/davideverona/deep-crowd-counting_crowdnet)
-The arxiv paper is available [here](https://arxiv.org/abs/1608.06197.pdf)
+### Prerequisites
+* Pytorch
 
-### Getting started
-You need python modules: 'cv2', 'torch', 'numpy', 'h5py', 'matplotlib', etc..
-``` 
-	sudo apt-get install python-opencv python-matplotlib python-numpy
-	Installing the pytorch may be a little more complex, you could find the details [here](https://github.com/pytorch/pytorch#installation) 
-    
+### Recommended
+* Linux with Pytorch + CUDA + cuDNN
+
+### Getting Started
+
 ```
+# clone this repo
+git clone https://github.com/BingzheWu/pytorch_crowd_count
 
-Remember to enable the CUDA, since it is very slow using cpu.
+cd pytorch_crowd_count-master
 
-### Before training
+# download the dataset [UCF_CC_50](http://crcv.ucf.edu/data/crowd_counting.php)
 
-* python data_process.py
-in this part, we load the img and the ground truth， do gaussian filter to the ground truth(with KD-tree) , split the pictures into pieces and store them in the document ' dataset/processed_hdf5' (surely we store the patches in the form of h5)
+# data preprocessing
+python data_processed.py
 
-* python loader.py
-in this part, we load the patches in the 'dataset/processed_hdf5' to torch. we load 20 patches one time.
+# train the model(the time depends on your hardware)
+python train.py
 
-### Train
+# test the model
+python demo.py
 
-* python train.py
-train the net in this part, until there is no patch in that document.
-the net trained is stored in 'checkpoint/crowd_net19.pth'
+```
+## Dataset
+The dataset used is the UCF_CC_50, it contains 50 pairs of pictures.
 
-### Try or Evalute
-* python demo.py
-you put a picture into the demo, and it will return a heatmap for you. if you want to find out how many people in this picture, just do integration.
+For example:
 
-#### To be continue...
+<img src="demo/demo1.jpg" width="256px"/>
+<img src="demo/demo2.jpg" width="256px"/>
+
+## To be continued...
 
 
-    
+
