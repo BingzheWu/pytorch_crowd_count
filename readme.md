@@ -38,7 +38,16 @@ The dataset used is the UCF_CC_50, it contains 50 pairs of pictures.
 For example:
 
 <img src="demo/demo1.jpg" width="256px"/>
-<img src="demo/demo2.jpg" width="256px"/>
+<img src="demo/demo3.jpg" width="256px"/>
+<img src="demo/demo4.jpg" width="256px"/>
+
+## Output
+After train, we got the output heatmaps of those three as follows:
+
+<img src="demo/demo1.png" width="256px"/>
+<img src="demo/demo3.png" width="256px"/>
+<img src="demo/demo4.png" width="256px"/>
+
 
 ## To be continued...
 
