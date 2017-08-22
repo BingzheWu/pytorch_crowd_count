@@ -26,6 +26,8 @@ class high_level_feature_net(nn.Module):
 				idx_M += 1
 				if idx_M == 4:
 					layers += [nn.MaxPool2d(kernel_size = 2, stride = 1)]
+					layers += [nn.Conv2d(512, 512, kernel_size = 3, stride = 1, padding = 2, dilation = 2)]
+					layers += [nn.ReLU()]
 				else:
 					layers += [nn.MaxPool2d(kernel_size = 2, stride = 2)]
 			else:
@@ -42,13 +44,13 @@ class low_level_feature_net(nn.Module):
 		self.features = nn.Sequential(
 			nn.Conv2d(3, 24, kernel_size = 5, padding = 3, ),
 			nn.ReLU(),
-			nn.MaxPool2d(kernel_size = 5, stride = 2),
+			nn.AvgPool2d(kernel_size = 5, stride = 2),
 			nn.Conv2d(24, 24, kernel_size = 5, padding = 3),
 			nn.ReLU(),
-			nn.MaxPool2d(kernel_size = 5, stride = 2),
+			nn.AvgPool2d(kernel_size = 5, stride = 2),
 			nn.Conv2d(24, 24, kernel_size = 5, padding = 3),
 			nn.ReLU(),
-			nn.MaxPool2d(kernel_size = 5, stride = 2))
+			nn.AvgPool2d(kernel_size = 5, stride = 2))
 	def forward(self, x):
 		feature = self.features(x)
 		return feature
